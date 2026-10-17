@@ -1,0 +1,27 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "A e-commerce food delivery platform to deliver the food from different restuarants and food places to college/Universities campus",
+  "keywords": [
+    "node"
+  ],
+  "homepage": "https://github.com/Ayush17314/CampusEats30#readme",
+  "bugs": {
+    "url": "https://github.com/Ayush17314/CampusEats30/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ayush17314/CampusEats30.git"
+  },
+  "license": "ISC",
+  "author": "Ayush Kumar Dubey",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0"
+  }
+}
