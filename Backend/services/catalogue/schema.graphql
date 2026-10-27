@@ -1,0 +1,34 @@
+# CS543 Web Services · Assignment 7 · schema.graphql
+# CampusEats Catalogue Service GraphQL SDL
+
+type Dish {
+  id: ID!
+  name: String!
+  price: Float!
+  available: Boolean!
+  category: String
+  vendorId: String
+}
+
+input AddDishInput {
+  name: String!
+  price: Float!
+  available: Boolean
+  category: String
+  vendorId: String
+}
+
+input UpdateDishInput {
+  price: Float
+  available: Boolean
+}
+
+type Query {
+  dishes(category: String, available: Boolean): [Dish!]!
+  dish(id: ID!): Dish
+}
+
+type Mutation {
+  addDish(input: AddDishInput!): Dish!
+  updateDish(id: ID!, input: UpdateDishInput!): Dish
+}

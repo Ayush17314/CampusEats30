@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CS543 Web Services · Assignment 3 · Task 3: Hand-formed SOAP Success Response -->
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:gate="https://payment.iiitv.ac.in/soap/gateway">
+  <soap:Body>
+    <gate:ChargeResponse>
+      <gate:transactionId>txn-soap-994182</gate:transactionId>
+      <gate:status>CAPTURED</gate:status>
+      <gate:authCode>AUTH-OK-7712</gate:authCode>
+      <gate:timestamp>2026-10-27T15:10:00Z</gate:timestamp>
+    </gate:ChargeResponse>
+  </soap:Body>
+</soap:Envelope>

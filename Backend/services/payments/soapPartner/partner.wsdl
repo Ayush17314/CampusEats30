@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CS543 Web Services · Assignment 3 · Task 2: External SOAP Partner WSDL -->
+<definitions name="CampusPayGateway"
+    targetNamespace="https://payment.iiitv.ac.in/soap/gateway"
+    xmlns:tns="https://payment.iiitv.ac.in/soap/gateway"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+  <!-- 1. TYPES (XML Schema) -->
+  <types>
+    <xsd:schema targetNamespace="https://payment.iiitv.ac.in/soap/gateway" elementFormDefault="qualified">
+      <xsd:element name="ChargeRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="orderReference" type="xsd:string"/>
+            <xsd:element name="studentId" type="xsd:string"/>
+            <xsd:element name="amountInr" type="xsd:decimal"/>
+            <xsd:element name="paymentMethod" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="ChargeResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="transactionId" type="xsd:string"/>
+            <xsd:element name="status" type="xsd:string"/>
+            <xsd:element name="authCode" type="xsd:string"/>
+            <xsd:element name="timestamp" type="xsd:dateTime"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="PaymentFault">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="errorCode" type="xsd:string"/>
+            <xsd:element name="reason" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </types>
+
+  <!-- 2. MESSAGES -->
+  <message name="ChargeInput">
+    <part name="parameters" element="tns:ChargeRequest"/>
+  </message>
+  <message name="ChargeOutput">
+    <part name="parameters" element="tns:ChargeResponse"/>
+  </message>
+  <message name="PaymentFaultMessage">
+    <part name="fault" element="tns:PaymentFault"/>
+  </message>
+
+  <!-- 3. PORT TYPE -->
+  <portType name="CampusPayPortType">
+    <operation name="charge">
+      <input message="tns:ChargeInput"/>
+      <output message="tns:ChargeOutput"/>
+      <fault name="PaymentFault" message="tns:PaymentFaultMessage"/>
+    </operation>
+  </portType>
+
+  <!-- 4. BINDING (SOAP 1.1 over HTTP) -->
+  <binding name="CampusPaySoapBinding" type="tns:CampusPayPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="charge">
+      <soap:operation soapAction="https://payment.iiitv.ac.in/soap/gateway/charge"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="PaymentFault">
+        <soap:fault name="PaymentFault" use="literal"/>
+      </fault>
+    </operation>
+  </binding>
+
+  <!-- 5. SERVICE & PORT -->
+  <service name="CampusPayGatewayService">
+    <port name="CampusPayPort" binding="tns:CampusPaySoapBinding">
+      <soap:address location="https://payment.iiitv.ac.in/soap/v1/gateway"/>
+    </port>
+  </service>
+</definitions>

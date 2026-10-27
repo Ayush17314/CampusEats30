@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CS543 Web Services · Assignment 3 · Task 3: Hand-formed SOAP Request Envelope -->
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:gate="https://payment.iiitv.ac.in/soap/gateway">
+  <soap:Header>
+    <gate:SecurityToken>
+      <gate:ApiKey>campus_secret_live_key_9981</gate:ApiKey>
+      <gate:CampusMerchantId>IIITV_CANTEEN_01</gate:CampusMerchantId>
+    </gate:SecurityToken>
+  </soap:Header>
+  <soap:Body>
+    <gate:ChargeRequest>
+      <gate:orderReference>ord-2026-8812</gate:orderReference>
+      <gate:studentId>202351001</gate:studentId>
+      <gate:amountInr>180.00</gate:amountInr>
+      <gate:paymentMethod>CAMPUS_WALLET</gate:paymentMethod>
+    </gate:ChargeRequest>
+  </soap:Body>
+</soap:Envelope>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CS543 Web Services · Assignment 3 · Task 3: Hand-formed SOAP Fault Response -->
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Payment instrument was declined by issuer bank.</faultstring>
+      <detail>
+        <gate:PaymentFault xmlns:gate="https://payment.iiitv.ac.in/soap/gateway">
+          <gate:errorCode>card_declined</gate:errorCode>
+          <gate:reason>Insufficient balance or unauthorized card limit exceeded.</gate:reason>
+        </gate:PaymentFault>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>
