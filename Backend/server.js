@@ -45,7 +45,11 @@ export async function createServer() {
   // 3. Assignment 5: Per-Client Rate Limiting
   app.use(rateLimiter);
 
-  // 4. Serve Static Frontend for Assignment 7 GraphQL Page
+  // 4. Serve Frontend static files directly
+  const frontendPath = path.join(__dirname, '../Frontend');
+  if (fs.existsSync(frontendPath)) {
+    app.use(express.static(frontendPath));
+  }
   app.use(express.static(path.join(__dirname, 'public')));
 
   // 5. Assignment 7: Apollo Server setup for GraphQL on /graphql

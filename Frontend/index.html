@@ -1,13 +1,235 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusEats — IIIT Vadodara Food Delivery</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- =============================================================
+       1. Top Navigation Bar
+  ============================================================== -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="brand">
+        <div class="brand-icon">🍔</div>
+        <div>
+          <div class="brand-title">CampusEats</div>
+          <div class="brand-sub">IIIT Vadodara Food Delivery</div>
+        </div>
+      </a>
+
+      <div class="nav-controls">
+        <!-- API Mode Switcher (REST vs GraphQL) -->
+        <button id="apiModeBtn" class="mode-badge" onclick="toggleApiMode()" title="Toggle between REST and GraphQL fetch">
+          <span>⚡</span>
+          <span id="apiModeLabel">Mode: REST</span>
+        </button>
+
+        <!-- User Profile Pill -->
+        <div id="userPill" class="user-pill">
+          <span>👤 Guest Student</span>
+          <span class="role-tag anonymous">Unauthenticated</span>
+        </div>
+
+        <button id="loginBtn" class="btn btn-outline" onclick="openLoginModal()">Login</button>
+        <button id="logoutBtn" class="btn btn-outline" style="display:none;" onclick="logout()">Logout</button>
+
+        <!-- Cart Button with Counter -->
+        <button id="cartBtn" class="btn btn-accent cart-btn" onclick="openCartDrawer()">
+          <span>🛒 Cart</span>
+          <span id="cartCount" class="cart-count" style="display:none;">0</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- =============================================================
+       2. Main Content Container
+  ============================================================== -->
+  <main class="container">
+
+    <!-- Hero Banner -->
+    <section class="hero">
+      <div class="hero-text">
+        <h1>Delicious Campus Food, Delivered.</h1>
+        <p>Order fresh meals, rolls, beverages, and snacks from the Central Canteen, Night Mess, and Nescafe Kiosk directly to your hostel room or lab.</p>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-box">
+          <div class="val">3</div>
+          <div class="lbl">Campus Outlets</div>
+        </div>
+        <div class="stat-box">
+          <div class="val">15m</div>
+          <div class="lbl">Avg Delivery</div>
+        </div>
+        <div class="stat-box">
+          <div class="val">₹0</div>
+          <div class="lbl">Delivery Fee</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Menu & Dish Catalogue Section -->
+    <section>
+      <div class="section-header">
+        <h2 class="section-title">Explore Campus Menu</h2>
+        <div class="category-tabs">
+          <button class="cat-tab active" data-cat="All" onclick="setCategoryFilter('All')">All Items</button>
+          <button class="cat-tab" data-cat="Snacks" onclick="setCategoryFilter('Snacks')">Snacks & Rolls</button>
+          <button class="cat-tab" data-cat="Meals" onclick="setCategoryFilter('Meals')">Meals & Thalis</button>
+          <button class="cat-tab" data-cat="Beverages" onclick="setCategoryFilter('Beverages')">Beverages</button>
+        </div>
+      </div>
+
+      <!-- Live Dishes Grid -->
+      <div id="dishesGrid" class="dishes-grid">
+        <!-- Rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- Restaurant Partner Portal (Assignment 9 Demonstration) -->
+    <section id="restaurantSection" class="panel" style="display:none;">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title" style="color:var(--accent);">🍳 Canteen / Restaurant Portal</h2>
+          <p style="font-size:0.85rem; color:var(--text-muted);">
+            Protected by Assignment 09 Role Guards (<code>requireRole('restaurant', 'admin')</code>).
+          </p>
+        </div>
+      </div>
+
+      <form id="restaurantDishForm" onsubmit="handleRestaurantAddDish(event)" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) 140px; gap:12px; align-items:end;">
+        <div class="form-field" style="margin:0;">
+          <label for="newDishName">Dish Name</label>
+          <input type="text" id="newDishName" required placeholder="e.g. Masala Paneer Tikka" />
+        </div>
+        <div class="form-field" style="margin:0;">
+          <label for="newDishPrice">Price (INR)</label>
+          <input type="number" id="newDishPrice" required min="1" step="1" placeholder="e.g. 110" />
+        </div>
+        <div class="form-field" style="margin:0;">
+          <label for="newDishCategory">Category</label>
+          <select id="newDishCategory">
+            <option value="Snacks">Snacks & Rolls</option>
+            <option value="Meals">Meals & Thalis</option>
+            <option value="Beverages">Beverages</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="height:42px;">+ Add Dish</button>
+      </form>
+    </section>
+
+    <!-- Student Orders Section -->
+    <section id="ordersSection" class="panel">
+      <div class="section-header">
+        <h2 class="section-title">Your Campus Orders</h2>
+        <button class="btn btn-outline" style="font-size:0.8rem; padding:4px 10px;" onclick="fetchOrders()">Refresh Orders</button>
+      </div>
+      <div id="ordersList" class="orders-list">
+        <!-- Rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- Live Protocol Inspector -->
+    <section class="inspector">
+      <div class="inspector-header">
+        <span>📡 Live Protocol & Network Inspector (CS543 Dev Panel)</span>
+        <span>REST & GraphQL Traffic</span>
+      </div>
+      <div id="inspectorLogs" class="inspector-logs">
+        <div style="color:#64748b;">// Awaiting network exchanges...</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =============================================================
+       3. Cart Slide-Over Drawer
+  ============================================================== -->
+  <div id="drawerBackdrop" class="drawer-backdrop" onclick="closeCartDrawer()"></div>
+  <aside id="cartDrawer" class="drawer">
+    <div class="drawer-header">
+      <h2>Your Cart</h2>
+      <button class="close-btn" onclick="closeCartDrawer()">&times;</button>
+    </div>
+
+    <div class="drawer-body" id="cartItemsList">
+      <!-- Line items rendered by app.js -->
+    </div>
+
+    <div class="drawer-footer">
+      <div class="total-row">
+        <span>Order Total:</span>
+        <span id="cartTotal">₹0.00</span>
+      </div>
+
+      <div class="form-field">
+        <label for="deliveryAddressInput">Campus Delivery Location</label>
+        <input type="text" id="deliveryAddressInput" value="Hostel Block B, Room 304" placeholder="e.g. Hostel Block B, Room 304" />
+      </div>
+
+      <div class="form-field">
+        <label for="paymentMethodSelect">Payment Instrument</label>
+        <select id="paymentMethodSelect">
+          <option value="CAMPUS_WALLET">IIITV Campus Wallet</option>
+          <option value="UPI">UPI (Google Pay / PhonePe / Paytm)</option>
+          <option value="CARD">Debit / Credit Card</option>
+        </select>
+      </div>
+
+      <button id="checkoutBtn" class="btn btn-accent" style="width:100%; padding:12px;" onclick="handleCheckout()">
+        Confirm & Place Order
+      </button>
+    </div>
+  </aside>
+
+  <!-- =============================================================
+       4. Login Modal (Assignment 9)
+  ============================================================== -->
+  <div id="loginModal" class="modal-overlay">
+    <div class="modal">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 class="modal-title">CampusEats Login</h3>
+        <button class="close-btn" onclick="closeLoginModal()">&times;</button>
+      </div>
+      <p class="modal-desc">Login to order food or manage campus food outlets.</p>
+
+      <!-- 1-Click Fast Test Logins -->
+      <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">1-Click Quick Demo Accounts</label>
+      <div class="quick-login-grid">
+        <div class="quick-login-btn" onclick="quickLogin('customer')">
+          <h5>👨‍🎓 Student</h5>
+          <p>Role: customer</p>
+        </div>
+        <div class="quick-login-btn" onclick="quickLogin('restaurant')">
+          <h5>🍳 Canteen Mgr</h5>
+          <p>Role: restaurant</p>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-bottom:12px; color:#cbd5e1; font-size:0.8rem;">— OR SIGN IN WITH CREDENTIALS —</div>
+
+      <!-- Custom Login Form -->
+      <form onsubmit="event.preventDefault(); login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);">
+        <div class="form-field">
+          <label for="loginEmail">Email / Student ID</label>
+          <input type="text" id="loginEmail" required placeholder="customer@iiitv.ac.in" />
+        </div>
+        <div class="form-field">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main JavaScript -->
+  <script src="/app.js"></script>
+</body>
 </html>
