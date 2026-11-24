@@ -1,9 +1,59 @@
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
 import { User } from './models/User.js';
 import { sendProblem, TYPE_CATALOGUE } from '../../utils/problem.js';
 
+dotenv.config();
+const SECRET = process.env.JWT_SECRET || 'campuseats_cs543_super_secret_jwt_key_2026';
+
+/**
+ * CS543 Assignment 09: Task 2 — POST /login
+ * Verifies password with bcrypt.compareSync;
+ * returns a JWT signed with SECRET carrying user id and role, with expiry (expiresIn).
+ * On failure replies 401.
+ */
+export async function loginUser(req, res, next) {
+  try {
+    const { email, studentId, username, password } = req.body;
+    const identifier = email || studentId || username;
+
+    if (!identifier || !password) {
+      return res.status(401).json({ error: 'missing credentials' });
+    }
+
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { studentId: identifier }]
+    });
+
+    if (!user || !user.comparePassword(password)) {
+      return res.status(401).json({ error: 'invalid credentials' });
+    }
+
+    // Sign JWT carrying user id and role, with expiry
+    const token = jwt.sign(
+      { id: user.studentId, role: user.role, email: user.email },
+      SECRET,
+      { expiresIn: '1h' }
+    );
+
+    return res.status(200).json({
+      token,
+      user: {
+        id: user.studentId,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function registerUser(req, res, next) {
   try {
-    const { studentId, name, email, phone, addresses } = req.body;
+    const { studentId, name, email, phone, password, role, addresses } = req.body;
     if (!studentId || !name || !email) {
       return sendProblem(res, {
         type: TYPE_CATALOGUE.VALIDATION_ERROR,
@@ -25,11 +75,24 @@ export async function registerUser(req, res, next) {
       });
     }
 
-    const user = await User.create({ studentId, name, email, phone, addresses: addresses || [] });
+    const rawPassword = password || 'DefaultPass@123';
+    const passwordHash = bcrypt.hashSync(rawPassword, 10);
+
+    const user = await User.create({
+      studentId,
+      name,
+      email,
+      phone: phone || '+91-9876543210',
+      passwordHash,
+      role: role || 'customer',
+      addresses: addresses || []
+    });
+
     res.status(201).json({
       studentId: user.studentId,
       name: user.name,
       email: user.email,
+      role: user.role,
       phone: user.phone,
       addresses: user.addresses
     });
@@ -56,6 +119,7 @@ export async function getProfile(req, res, next) {
       studentId: user.studentId,
       name: user.name,
       email: user.email,
+      role: user.role,
       phone: user.phone,
       addresses: user.addresses
     });

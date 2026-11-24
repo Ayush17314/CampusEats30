@@ -180,6 +180,72 @@ async function runTestSuite() {
     const gqlMutResult = await gqlMutRes.json();
     assert(gqlMutResult.data?.addDish?.name === 'Campus Special Sandwich', `GraphQL Mutation addDish creates new dish live in MongoDB`);
 
+    // -------------------------------------------------------------
+    // Test 9: CS543 Assignment 09 - Securing the API (JWT & Roles)
+    // -------------------------------------------------------------
+    console.log('\n--- Assignment 09: Securing the API Checks ---');
+
+    // Case 1: Request with no token -> 401
+    const noTokenRes = await fetch(`${baseUrl}/items`);
+    assert(noTokenRes.status === 401, `Case 1: GET /items with no token returns 401 (got ${noTokenRes.status})`);
+
+    // Case 2: Successful login -> JWT token
+    const loginCustomerRes = await fetch(`${baseUrl}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'customer@iiitv.ac.in', password: 'Customer@123' })
+    });
+    assert(loginCustomerRes.status === 200, `Case 2a: POST /login with valid customer credentials returns 200 OK`);
+    const customerLoginData = await loginCustomerRes.json();
+    const customerToken = customerLoginData.token;
+    assert(Boolean(customerToken), `Customer login returns valid JWT token`);
+
+    const loginRestaurantRes = await fetch(`${baseUrl}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'canteen@iiitv.ac.in', password: 'Canteen@123' })
+    });
+    assert(loginRestaurantRes.status === 200, `Case 2b: POST /login with valid restaurant credentials returns 200 OK`);
+    const restaurantLoginData = await loginRestaurantRes.json();
+    const restaurantToken = restaurantLoginData.token;
+    assert(Boolean(restaurantToken), `Restaurant login returns valid JWT token`);
+
+    // Case 3: Request with token on read route -> 200
+    const readWithTokenRes = await fetch(`${baseUrl}/items`, {
+      headers: { 'Authorization': `Bearer ${customerToken}` }
+    });
+    assert(readWithTokenRes.status === 200, `Case 3: GET /items with valid JWT token returns 200 OK`);
+
+    // Case 4: Privileged role (restaurant) on write route -> 201
+    const privilegedWriteRes = await fetch(`${baseUrl}/items`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${restaurantToken}`
+      },
+      body: JSON.stringify({
+        name: 'Secured Special Thali',
+        price: 120,
+        category: 'Meals'
+      })
+    });
+    assert(privilegedWriteRes.status === 201, `Case 4: POST /items by privileged role ('restaurant') returns 201 Created (got ${privilegedWriteRes.status})`);
+
+    // Case 5: Non-privileged role (customer) on write route -> 403 Forbidden
+    const unprivilegedWriteRes = await fetch(`${baseUrl}/items`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${customerToken}`
+      },
+      body: JSON.stringify({
+        name: 'Hacked Unauthorized Dish',
+        price: 10,
+        category: 'Snacks'
+      })
+    });
+    assert(unprivilegedWriteRes.status === 403, `Case 5: POST /items by non-privileged role ('customer') returns 403 Forbidden (got ${unprivilegedWriteRes.status})`);
+
   } finally {
     server.close();
     console.log(`\n--- Verification Finished: ${passed} Passed, ${failed} Failed ---`);

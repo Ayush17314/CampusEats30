@@ -9,6 +9,7 @@ import { securityHeaders } from './middleware/security.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
 import { methodOverride } from './middleware/methodOverride.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { auth, requireRole } from './middleware/auth.js';
 
 import accountsRoutes from './services/accounts/routes.js';
 import catalogueRoutes from './services/catalogue/routes.js';
@@ -17,6 +18,8 @@ import paymentsRoutes from './services/payments/routes.js';
 import deliveryRoutes from './services/delivery/routes.js';
 import notificationsRoutes from './services/notifications/routes.js';
 
+import { loginUser } from './services/accounts/controller.js';
+import { listDishes, addDish } from './services/catalogue/controller.js';
 import { resolvers } from './services/catalogue/resolvers.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -75,6 +78,14 @@ export async function createServer() {
       next(err);
     }
   });
+
+  // =========================================================================
+  // CS543 Assignment 09: Securing the API
+  // Exact tutorial shape: POST /login, auth, and requireRole guards on /items
+  // =========================================================================
+  app.post('/login', loginUser);
+  app.get('/items', auth, listDishes);
+  app.post('/items', auth, requireRole('restaurant', 'admin'), addDish);
 
   // 6. Microservice REST Routes
   app.use('/api/v1/accounts', accountsRoutes);

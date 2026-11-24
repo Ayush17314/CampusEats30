@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
 dotenv.config();
 
 import { Vendor } from './services/catalogue/models/Vendor.js';
@@ -44,21 +45,42 @@ export async function seedInitialData() {
       console.log('[Seed] Seeded campus delivery runners.');
     }
 
-    // 4. Seed Student Profile
-    const userCount = await User.countDocuments();
-    if (userCount === 0) {
-      await User.create({
-        studentId: '202351001',
-        name: 'Ayush Kumar Dubey',
-        email: '202351001@iiitvadodara.ac.in',
+    // 4. CS543 Assignment 09: Task 1 — Seed at least two users with different roles & bcrypt hashes
+    // User 1: Customer (Student)
+    await User.findOneAndUpdate(
+      { email: 'customer@iiitv.ac.in' },
+      {
+        studentId: 'cust-202351001',
+        name: 'Aarav Sharma (Student)',
+        email: 'customer@iiitv.ac.in',
         phone: '+91-9123456789',
+        passwordHash: bcrypt.hashSync('Customer@123', 10),
+        role: 'customer',
         addresses: [
-          { title: 'Hostel Room', area: 'Hostel Block B, Room 304', landmark: 'Near Lift Lobby' },
-          { title: 'Lab', area: 'CS Lab 2, Academic Block', landmark: 'Second Floor' }
+          { title: 'Hostel Room', area: 'Hostel Block B, Room 304', landmark: 'Near Lift Lobby' }
         ]
-      });
-      console.log('[Seed] Seeded test student profile.');
-    }
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    console.log('[Seed] Seeded user: customer@iiitv.ac.in (role: customer, password: Customer@123)');
+
+    // User 2: Restaurant (Vendor Manager)
+    await User.findOneAndUpdate(
+      { email: 'canteen@iiitv.ac.in' },
+      {
+        studentId: 'restaurant-canteen',
+        name: 'Central Canteen Manager',
+        email: 'canteen@iiitv.ac.in',
+        phone: '+91-9876543210',
+        passwordHash: bcrypt.hashSync('Canteen@123', 10),
+        role: 'restaurant',
+        addresses: [
+          { title: 'Canteen Kitchen', area: 'Academic Block Ground Floor', landmark: 'Main Dining Hall' }
+        ]
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    console.log('[Seed] Seeded user: canteen@iiitv.ac.in (role: restaurant, password: Canteen@123)');
 
     console.log('[Seed] Database initialization complete.');
   } catch (err) {

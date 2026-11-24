@@ -299,3 +299,30 @@ npm start        # Launches server on http://localhost:3001
 * **GraphQL Endpoint**: `http://localhost:3001/graphql`
 * **Interactive Web Demo**: `http://localhost:3001/`
 * **OpenAPI Contract**: `Backend/openapi.yaml`
+
+## 10. API Security & Role-Based Access Control (Assignment 9)
+
+### 10.1 Two-Guard Architecture
+CampusEats implements the tutorial standard: **Authenticate, then Authorize — in that order**:
+1. **Guard 1: `auth` Middleware ("Who are you?")**:
+   * Reads `Authorization: Bearer <token>` header.
+   * Verifies the token using `jwt.verify(token, process.env.JWT_SECRET)`.
+   * Unpacks verified claims (`id`, `role`, `email`) into `req.user`.
+   * Returns `401 Unauthorized` with `{"error": "missing token"}` or `{"error": "invalid token"}` if verification fails.
+2. **Guard 2: `requireRole(...ok)` Middleware ("May you?")**:
+   * Inspects `req.user.role`.
+   * If the authenticated role is not in the allowed list, rejects the request immediately with `403 Forbidden` (`{"error": "forbidden"}`).
+
+### 10.2 Cryptographic Password Hashing & JWT Login
+* **User Seeding**: Passwords are saved strictly as 10-round salted `bcrypt` hashes (`bcrypt.hashSync(plain, 10)`), never in plaintext.
+* **`POST /login`**:
+  * Authenticates credentials with `user.comparePassword(candidate)`.
+  * Issues a signed HMAC-SHA256 JWT containing `{ id, role, email }` with a 1-hour expiration (`expiresIn: '1h'`).
+  * Rejects invalid attempts with `401 Unauthorized`.
+
+### 10.3 Route Guard Demonstration Matrix
+* `GET /items` $\to$ Guarded by `auth` (all authenticated users, both `customer` and `restaurant`, receive `200 OK`).
+* `POST /items` $\to$ Guarded by `auth, requireRole('restaurant', 'admin')`.
+  * Called by `restaurant` $\to$ `201 Created`.
+  * Called by `customer` $\to$ `403 Forbidden`.
+* Any route without token $\to$ `401 Unauthorized`.
