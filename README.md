@@ -5,12 +5,13 @@
 **Team Submission:** Group Group-30  
 
 ## Team Members
-| Name | Roll Number | Service Responsibility |
-| :--- | :--- | :--- |
-| **Ayush Kumar Dubey** | 202351001 | Architecture, Orders & Security Backend |
-| *[Member 2 Name]* | *[Roll No]* | Catalogue Service (REST & GraphQL) |
-| *[Member 3 Name]* | *[Roll No]* | Payments & Delivery Services |
-| *[Member 4 Name]* | *[Roll No]* | Frontend Client & Testing |
+| # | Name | Roll Number | 
+|---|---|---|---|
+| 1 | **Ayush Kumar Dubey** | `20251651030` | 
+| 2 | **Abhinav Jain** | `20251651003` | 
+| 3 | **Bharath Kumar MP** | `20251651031` | 
+| 4 | **Anuj Gupta** | `20251651025` | 
+| 5 | **Kaushik Nanda Upadhaya** | `20251651050` | 
 
 ---
 
